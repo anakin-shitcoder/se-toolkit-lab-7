@@ -61,14 +61,14 @@ In simple words, you should be able to say:
 ### Prerequisites
 
 1. Complete the [lab setup](./lab/tasks/setup-simple.md#lab-setup) ([full version](./lab/tasks/setup.md#lab-setup))
-2. Set up an [AI coding agent](./wiki/coding-agents.md)
+2. Set up an [AI coding agent](./wiki/coding-agents.md#coding-agents)
 
 ### Required
 
-1. [Build the data pipeline](./lab/tasks/required/task-1.md)
-2. [Analytics endpoints](./lab/tasks/required/task-2.md)
-3. [Dashboard front-end](./lab/tasks/required/task-3.md)
+1. [Build the data pipeline](./lab/tasks/required/task-1.md#build-the-data-pipeline)
+2. [Analytics endpoints](./lab/tasks/required/task-2.md#analytics-endpoints)
+3. [Dashboard front-end](./lab/tasks/required/task-3.md#dashboard-front-end)
 
 ### Optional
 
-1. [Grafana dashboard](./lab/tasks/optional/task-1.md)
+1. [Grafana dashboard](./lab/tasks/optional/task-1.md#grafana-dashboard)
