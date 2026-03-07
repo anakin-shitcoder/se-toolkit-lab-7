@@ -20,7 +20,12 @@ Docs:
 
 ## Hardening steps
 
-The steps below create a non-root user, configure a firewall, set up brute-force protection, and harden the [`SSH`](./ssh.md#what-is-ssh) configuration.
+<!-- no toc -->
+1. [Create a non-root user](#create-a-non-root-user)
+2. [Configure `ufw` firewall](#configure-ufw-firewall)
+3. [Configure `fail2ban`](#configure-fail2ban)
+4. [Harden `SSH` config](#harden-ssh-config)
+5. [Restart `sshd`](#restart-sshd)
 
 ### Create a non-root user
 
@@ -34,7 +39,9 @@ The steps below create a non-root user, configure a firewall, set up brute-force
 
    Replace [`<your-vm-ip-address>`](./vm.md#your-vm-ip-address).
 
-2. To create a new user,
+2. Come up with a [username](./operating-system.md#username).
+
+3. To create a new user,
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
@@ -42,9 +49,9 @@ The steps below create a non-root user, configure a firewall, set up brute-force
    adduser <username>
    ```
 
-   Replace `<username>` with your chosen username.
+   Replace [`<username>`](./operating-system.md#username-placeholder) with the username.
 
-3. To add the user to the `sudo` group,
+4. To add the user to the `sudo` group,
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
@@ -52,7 +59,7 @@ The steps below create a non-root user, configure a firewall, set up brute-force
    usermod -aG sudo <username>
    ```
 
-4. To set up [`SSH`](./ssh.md#what-is-ssh) key authentication for the new user,
+5. To set up [`SSH`](./ssh.md#what-is-ssh) key authentication for the new user,
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
@@ -64,7 +71,7 @@ The steps below create a non-root user, configure a firewall, set up brute-force
    chmod 600 /home/<username>/.ssh/authorized_keys
    ```
 
-5. To verify you can `SSH` as the new user,
+6. To verify you can `SSH` as the new user,
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
@@ -74,13 +81,13 @@ The steps below create a non-root user, configure a firewall, set up brute-force
 
    Replace [`<your-vm-ip-address>`](./vm.md#your-vm-ip-address).
 
-6. Confirm the connection did not prompt for a password. If it did, repeat step 4.
+7. Confirm the connection did not prompt for a password. If it did, repeat step 4.
 
-7. Disconnect from the root session and use the non-root user for all remaining steps.
+8. Disconnect from the root session and use the non-root user for all remaining steps.
 
 ### Configure `ufw` firewall
 
-`ufw` (Uncomplicated Firewall) is a simple firewall for [`Linux`](./linux.md#what-is-linux). By default, `ufw` denies all incoming traffic. The steps below create exceptions for the ports your VM needs.
+`ufw` (`Uncomplicated Firewall`) is a simple firewall for [`Linux`](./linux.md#what-is-linux). By default, `ufw` denies all incoming traffic. The steps below create exceptions for the ports your VM needs.
 
 1. Find the [`<caddy-port>`](./caddy.md#caddy-port).
 
@@ -92,7 +99,8 @@ The steps below create a non-root user, configure a firewall, set up brute-force
    sudo ufw allow 22
    ```
 
-   **Important:** Always allow `SSH` (port 22) before enabling `ufw`. Otherwise, you will lock yourself out of the VM.
+   > 🟪 **Important**
+   > Always allow `SSH` (port 22) before enabling `ufw`. Otherwise, you will lock yourself out of the VM.
 
 3. To allow the application port,
 
