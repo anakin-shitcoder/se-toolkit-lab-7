@@ -353,7 +353,7 @@ Replace the placeholders:
 **Single placeholder (linked):**
 
 ~~~markdown
-Replace the placeholder [`<placeholder>` placeholder](link-to-explanation).
+Replace the placeholder [`<placeholder>`](link-to-explanation).
 ~~~
 
 **Single placeholder (not linked):**

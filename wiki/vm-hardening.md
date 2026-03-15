@@ -4,10 +4,10 @@
 
 - [What is VM hardening](#what-is-vm-hardening)
 - [Set up login as the non-root user `<user>`](#set-up-login-as-the-non-root-user-user)
-  - [Connect to the VM as the user `root` (LOCAL)](#connect-to-the-vm-as-the-user-root-local)
+  - [Connect to your VM as the user `root` (LOCAL)](#connect-to-your-vm-as-the-user-root-local)
   - [Create the non-root user `<user>` (REMOTE)](#create-the-non-root-user-user-remote)
   - [Set up the `SSH` key authentication for the user `<user>` (REMOTE)](#set-up-the-ssh-key-authentication-for-the-user-user-remote)
-  - [Verify you can connect to your VM by `SSH` as the user `<user>` (LOCAL)](#verify-you-can-connect-to-your-vm-by-ssh-as-the-user-user-local)
+  - [Connect to your VM by `SSH` as the user `<user>` (LOCAL)](#connect-to-your-vm-by-ssh-as-the-user-user-local)
   - [Harden the `SSH` config (REMOTE)](#harden-the-ssh-config-remote)
   - [Update the local `SSH` config (LOCAL)](#update-the-local-ssh-config-local)
   - [Restart `sshd` (REMOTE)](#restart-sshd-remote)
@@ -36,17 +36,17 @@ Steps:
 Complete these steps:
 
 <!-- no toc -->
-1. [Connect to the VM as the user `root` (LOCAL)](#connect-to-the-vm-as-the-user-root-local)
+1. [Connect to your VM as the user `root` (LOCAL)](#connect-to-your-vm-as-the-user-root-local)
 2. [Create the non-root user `<user>` (REMOTE)](#create-the-non-root-user-user-remote)
 3. [Set up the `SSH` key authentication for the user `<user>` (REMOTE)](#set-up-the-ssh-key-authentication-for-the-user-user-remote)
-4. [Verify you can connect to your VM by `SSH` as the user `<user>` (LOCAL)](#verify-you-can-connect-to-your-vm-by-ssh-as-the-user-user-local)
+4. [Connect to your VM by `SSH` as the user `<user>` (LOCAL)](#connect-to-your-vm-by-ssh-as-the-user-user-local)
 5. [Harden the `SSH` config (REMOTE)](#harden-the-ssh-config-remote)
 6. [Update the local `SSH` config (LOCAL)](#update-the-local-ssh-config-local)
 7. [Restart `sshd` (REMOTE)](#restart-sshd-remote)
 
-### Connect to the VM as the user `root` (LOCAL)
+### Connect to your VM as the user `root` (LOCAL)
 
-1. To connect to the VM as [the user `root`](./linux.md#the-root-user),
+1. To connect to your VM as [the user `root`](./linux.md#the-root-user),
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
@@ -118,6 +118,8 @@ Complete these steps:
 
    **Note:** See [Set the permissions](./linux-administration.md#set-the-permissions).
 
+   <!-- TODO why these permissions are correct? -->
+
 5. To set the correct permissions on the `authorized_keys` file,
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
@@ -126,32 +128,35 @@ Complete these steps:
    chmod 600 /home/<user>/.ssh/authorized_keys
    ```
 
-### Verify you can connect to your VM by `SSH` as the user `<user>` (LOCAL)
+   <!-- TODO why these permissions are correct? -->
+
+### Connect to your VM by `SSH` as the user `<user>` (LOCAL)
 
 > [!NOTE]
 > Replace [`<user>`](./operating-system.md#user-placeholder) with the actual [username](./operating-system.md#username).
 
 1. [Open a new `VS Code Terminal`](./vs-code.md#open-a-new-vs-code-terminal).
 
-2. To verify you can connect as the user `<user>`,
+2. To connect as the user `<user>`,
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
    ```terminal
-   ssh <user>@<your-vm-ip-address>
+   ssh -i ~/.ssh/se_toolkit_key <user>@<your-vm-ip-address>
    ```
 
-   Replace [`<your-vm-ip-address>`](./vm.md#your-vm-ip-address).
+   Replace the placeholders:
+
+   - [`<user>`](./operating-system.md#user-placeholder)
+   - [`<your-vm-ip-address>`](./vm.md#your-vm-ip-address)
 
 3. Confirm the connection did not prompt for a password.
-
-4. Close the `VS Code Terminal` where you connected as the user `root`.
 
 ### Harden the `SSH` config (REMOTE)
 
 <!-- TODO check there's this file at all with this content -->
 
-1. Continue working in the `VS Code Terminal` where you [connected to your VM as the user `<user>`](#verify-you-can-connect-to-your-vm-by-ssh-as-the-user-user-local).
+1. [Connect to your VM as the user `<user>`](#connect-to-your-vm-by-ssh-as-the-user-user-local) if not yet connected.
 
 2. To open the [`SSH`](./ssh.md#what-is-ssh) config,
 
@@ -175,12 +180,6 @@ Complete these steps:
 
 5. Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
 
-> [!IMPORTANT]
-> Make sure you can `SSH` as a non-root user before disabling root login.
-
-> [!IMPORTANT]
-> Make sure your `SSH` key is set up before disabling password authentication.
-
 ### Update the local `SSH` config (LOCAL)
 
 > [!NOTE]
@@ -189,11 +188,32 @@ Complete these steps:
 1. [Open the file](./vs-code.md#open-the-file):
    `~/.ssh/config`
 
-2. Find the `se-toolkit-vm` entry and change `User root` to:
+2. Find the `se-toolkit-vm` entry and change `User root` to `User <user>`.
 
-   ```text
-   User <user>
-   ```
+   Replace the placeholder [`<user>`](./operating-system.md#user-placeholder).
+
+   The result should look like this:
+
+   - `Linux`, `Windows`:
+
+     ```text
+     Host se-toolkit-vm
+        HostName <your-vm-ip-address>
+        User <user>
+        IdentityFile ~/.ssh/se_toolkit_key
+        AddKeysToAgent yes
+     ```
+
+   - `macOS`:
+
+     ```text
+     Host se-toolkit-vm
+        HostName <your-vm-ip-address>
+        User <user>
+        IdentityFile ~/.ssh/se_toolkit_key
+        AddKeysToAgent yes
+        UseKeychain yes
+     ```
 
 ### Restart `sshd` (REMOTE)
 
@@ -220,10 +240,10 @@ Complete these steps:
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
    ```terminal
-   ssh <user>@<your-vm-ip-address>
+   ssh se-toolkit-vm
    ```
 
-   Replace [`<your-vm-ip-address>`](./vm.md#your-vm-ip-address).
+4. Confirm you are logged in as `<user>`, not `root`.
 
 > [!IMPORTANT]
 > Keep your current `SSH` session open until you confirm the new connection works. If the new connection fails, use the existing session to fix the config.
@@ -249,7 +269,8 @@ Complete these steps:
    ```
 
    > 🟪 **Important**
-   > Always allow `SSH` (port 22) before enabling `ufw`. Otherwise, you will lock yourself out of the VM.
+   > Always allow `SSH` (port 22) before enabling `ufw`.
+   > Otherwise, you will lock yourself out of your VM.
 
 2. Find the [`<caddy-port>`](./caddy.md#caddy-port).
 
