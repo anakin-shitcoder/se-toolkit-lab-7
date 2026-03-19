@@ -14,6 +14,7 @@
   - [Switch to a new branch using the `VS Code Terminal`](#switch-to-a-new-branch-using-the-vs-code-terminal)
   - [Switch to a new branch using `GitLens`](#switch-to-a-new-branch-using-gitlens)
 - [Detect conflicts](#detect-conflicts)
+  - [Detect conflicts using `GitLens`](#detect-conflicts-using-gitlens)
 - [Hard reset the `<branch>`](#hard-reset-the-branch)
 - [Resolve a merge conflict](#resolve-a-merge-conflict)
   - [Resolve a merge conflict using `VS Code`](#resolve-a-merge-conflict-using-vs-code)
@@ -197,6 +198,8 @@ Docs:
 ## Detect conflicts
 
 It can happen that commits in [`<branch>`](./git.md#branch) on [`<remote>`](./git.md#remote-placeholder) are different from commits on the `<branch>` in the cloned repo on your computer.
+
+### Detect conflicts using `GitLens`
 
 1. Look at the [`Status Bar`](./vs-code.md#status-bar).
 
