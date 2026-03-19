@@ -1,15 +1,13 @@
 # Incomplete sections
 
-**Date:** 2026-03-19
+**Date:** 2026-03-20
 **Paths scanned:** `lab/tasks`, `wiki`
 
 <h2>Table of contents</h2>
 
 - [Lab](#lab)
-  - [`lab/tasks/optional/task-1.md`](#labtasksoptionaltask-1md)
   - [`lab/tasks/required/task-1.md`](#labtasksrequiredtask-1md)
-  - [`lab/tasks/required/task-2.md`](#labtasksrequiredtask-2md)
-  - [`lab/tasks/required/task-3.md`](#labtasksrequiredtask-3md)
+  - [`lab/tasks/required/task-4.md`](#labtasksrequiredtask-4md)
 - [Wiki](#wiki)
   - [`wiki/architecture.md`](#wikiarchitecturemd)
   - [`wiki/autochecker-api.md`](#wikiautochecker-apimd)
@@ -18,9 +16,6 @@
   - [`wiki/database-modeling.md`](#wikidatabase-modelingmd)
   - [`wiki/docker-compose.md`](#wikidocker-composemd)
   - [`wiki/file-formats.md`](#wikifile-formatsmd)
-  - [`wiki/file-system.md`](#wikifile-systemmd)
-  - [`wiki/frontend.md`](#wikifrontendmd)
-  - [`wiki/git-vscode.md`](#wikigit-vscodemd)
   - [`wiki/git.md`](#wikigitmd)
   - [`wiki/github.md`](#wikigithubmd)
   - [`wiki/http.md`](#wikihttpmd)
@@ -38,21 +33,13 @@
 
 ## Lab
 
-### `lab/tasks/optional/task-1.md`
-
-- [lab/tasks/optional/task-1.md:25](../../lab/tasks/optional/task-1.md#deliverables) — ## Deliverables (empty)
-
 ### `lab/tasks/required/task-1.md`
 
-- [lab/tasks/required/task-1.md:93](../../lab/tasks/required/task-1.md#deliverables) — ## Deliverables (empty)
+- [lab/tasks/required/task-1.md:49](../../lab/tasks/required/task-1.md#deliverables) — ## Deliverables (empty)
 
-### `lab/tasks/required/task-2.md`
+### `lab/tasks/required/task-4.md`
 
-- [lab/tasks/required/task-2.md:76](../../lab/tasks/required/task-2.md#deliverables) — ## Deliverables (empty)
-
-### `lab/tasks/required/task-3.md`
-
-- [lab/tasks/required/task-3.md:144](../../lab/tasks/required/task-3.md#deliverables) — ## Deliverables (empty)
+- [lab/tasks/required/task-4.md:12](../../lab/tasks/required/task-4.md#deliverables) — ## Deliverables (empty)
 
 ## Wiki
 
@@ -91,20 +78,6 @@
 - [wiki/file-formats.md:52](../../wiki/file-formats.md#common-file-formats) — ## Common file formats (empty)
 - [wiki/file-formats.md:76](../../wiki/file-formats.md#markdown-code-block) — #### `Markdown` code block (empty)
 - [wiki/file-formats.md:199](../../wiki/file-formats.md#csv) — ### `CSV` (empty)
-
-### `wiki/file-system.md`
-
-- [wiki/file-system.md:71](../../wiki/file-system.md#subdirectory) — ### Subdirectory (TODO: )
-- [wiki/file-system.md:97](../../wiki/file-system.md#special-paths) — ## Special paths (empty)
-
-### `wiki/frontend.md`
-
-- [wiki/frontend.md:5](../../wiki/frontend.md#what-is-frontend) — ## What is frontend (TODO: )
-
-### `wiki/git-vscode.md`
-
-- [wiki/git-vscode.md:445](../../wiki/git-vscode.md#stage-all-changes-in-a-specific-file) — ### Stage all changes in a specific file (TODO: click + near the name)
-- [wiki/git-vscode.md:449](../../wiki/git-vscode.md#stage-all-changes-in-specific-files) — ### Stage all changes in specific files (TODO: select and click +)
 
 ### `wiki/git.md`
 
@@ -160,7 +133,7 @@
 
 ---
 
-**Summary:** 40 incomplete sections total — 27 empty, 13 TODO-only
+**Summary:** 33 incomplete sections total — 24 empty, 9 TODO-only
 
 Most affected files:
 
