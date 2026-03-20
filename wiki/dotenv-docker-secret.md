@@ -239,19 +239,19 @@ Variables for the [autochecker](./autochecker.md#what-is-the-autochecker) ETL pi
 
 ### `AUTOCHECKER_API_URL`
 
-The base URL of the autochecker API.
+The [`Autochecker` API base URL](./autochecker-api.md)
 
 Default: `https://auche.namaz.live`
 
 ### `AUTOCHECKER_API_LOGIN`
 
-The login used to authenticate with the autochecker API.
+The [`Autochecker` API login](./autochecker-api.md#autochecker-api-login).
 
 Default: `<autochecker-api-login>`
 
 ### `AUTOCHECKER_API_PASSWORD`
 
-The password used to authenticate with the autochecker API.
+The [`Autochecker` API password](./autochecker-api.md#autochecker-api-password).
 
 Default: `<autochecker-api-password>`.
 
