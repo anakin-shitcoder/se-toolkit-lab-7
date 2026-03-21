@@ -95,3 +95,72 @@ By the end of this lab, you should be able to say:
 ### Optional
 
 1. [Flutter Web Chatbot](./lab/tasks/optional/task-1.md)
+
+## Deploy
+
+### Prerequisites
+
+- Docker and Docker Compose installed on VM
+- LMS backend running (from previous labs)
+- Telegram Bot Token from [@BotFather](https://t.me/BotFather)
+- LLM API credentials (optional, for natural language features)
+
+### Configuration
+
+1. Create `.env.docker.secret` in the project root:
+
+```bash
+cp .env.docker.example .env.docker.secret
+# Edit with real values:
+# - BOT_TOKEN (from @BotFather)
+# - LMS_API_KEY
+# - LLM_API_KEY, LLM_API_BASE_URL, LLM_API_MODEL (optional)
+```
+
+2. Create `bot/.env.bot.secret`:
+
+```bash
+cp bot/.env.bot.example bot/.env.bot.secret
+# Edit with same values as .env.docker.secret
+```
+
+### Start Services
+
+```bash
+cd ~/se-toolkit-lab-7
+docker compose --env-file .env.docker.secret up --build -d
+```
+
+### Verify Deployment
+
+```bash
+# Check all services are running
+docker compose --env-file .env.docker.secret ps
+
+# Check bot logs
+docker compose --env-file .env.docker.secret logs bot --tail 30
+
+# Test backend health
+curl -sf http://localhost:42002/docs
+
+# Test bot in Telegram - send /start to your bot
+```
+
+### Update Deployment
+
+```bash
+cd ~/se-toolkit-lab-7
+git pull
+docker compose --env-file .env.docker.secret up --build -d
+```
+
+### Troubleshooting
+
+| Symptom | Solution |
+|---------|----------|
+| Bot container restarting | Check logs: `docker compose logs bot` |
+| `/health` fails in Docker | Use `LMS_API_BASE_URL=http://backend:8000` (not localhost) |
+| LLM queries fail | Use `host.docker.internal` for LLM_API_BASE_URL |
+| "BOT_TOKEN is required" | Add to `.env.docker.secret`, not just `.env.bot.secret` |
+
+See [bot/README.md](bot/README.md) for detailed documentation.
