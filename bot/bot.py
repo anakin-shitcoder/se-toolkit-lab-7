@@ -15,6 +15,10 @@ import argparse
 import asyncio
 import logging
 import sys
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from aiogram.types import Message
 
 # Configure logging
 logging.basicConfig(
@@ -141,7 +145,7 @@ async def run_bot() -> None:
     await dp.start_polling(bot)
 
 
-async def cmd_start(message: Message) -> None:
+async def cmd_start(message: "Message") -> None:
     """Handle /start command from Telegram."""
     from handlers import handle_start
 
@@ -149,7 +153,7 @@ async def cmd_start(message: Message) -> None:
     await send_handler_result(message, result)
 
 
-async def cmd_help(message: Message) -> None:
+async def cmd_help(message: "Message") -> None:
     """Handle /help command from Telegram."""
     from handlers import handle_help
 
@@ -159,7 +163,7 @@ async def cmd_help(message: Message) -> None:
     await send_handler_result(message, result)
 
 
-async def cmd_health(message: Message) -> None:
+async def cmd_health(message: "Message") -> None:
     """Handle /health command from Telegram."""
     from handlers import handle_health
 
@@ -167,7 +171,7 @@ async def cmd_health(message: Message) -> None:
     await send_handler_result(message, result)
 
 
-async def cmd_labs(message: Message) -> None:
+async def cmd_labs(message: "Message") -> None:
     """Handle /labs command from Telegram."""
     from handlers import handle_labs
 
@@ -176,7 +180,7 @@ async def cmd_labs(message: Message) -> None:
     await send_handler_result(message, result)
 
 
-async def cmd_scores(message: Message) -> None:
+async def cmd_scores(message: "Message") -> None:
     """Handle /scores command from Telegram."""
     from handlers import handle_scores
 
@@ -185,7 +189,7 @@ async def cmd_scores(message: Message) -> None:
     await send_handler_result(message, result)
 
 
-async def handle_message(message: Message) -> None:
+async def handle_message(message: "Message") -> None:
     """
     Handle regular messages (for LLM intent recognition).
 
@@ -200,7 +204,7 @@ async def handle_message(message: Message) -> None:
     )
 
 
-async def send_handler_result(message: Message, result: HandlerResult) -> None:
+async def send_handler_result(message: "Message", result: HandlerResult) -> None:
     """
     Send handler result to Telegram chat.
 
