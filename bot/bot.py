@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aiogram.types import Message
+    from handlers.base import HandlerResult
 
 # Configure logging
 logging.basicConfig(
