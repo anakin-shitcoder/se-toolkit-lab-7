@@ -15,11 +15,6 @@ import argparse
 import asyncio
 import logging
 import sys
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from aiogram.types import Message
-    from handlers.base import HandlerResult
 
 # Configure logging
 logging.basicConfig(
@@ -205,7 +200,7 @@ async def handle_message(message: "Message") -> None:
     )
 
 
-async def send_handler_result(message: "Message", result: HandlerResult) -> None:
+async def send_handler_result(message: "Message", result: "HandlerResult") -> None:
     """
     Send handler result to Telegram chat.
 
