@@ -112,7 +112,7 @@ def _get_specific_score(lab_arg: str) -> HandlerResult:
     Get score for a specific lab.
 
     Args:
-        lab_arg: Lab identifier (e.g., "lab-04", "4")
+        lab_arg: Lab identifier (e.g., "lab-04", "4", "lab-01")
 
     Returns:
         HandlerResult: Lab score details with pass rates
@@ -144,7 +144,7 @@ def _get_specific_score(lab_arg: str) -> HandlerResult:
     except (urllib.error.HTTPError, urllib.error.URLError, Exception):
         pass  # Fall through to lab-4 format
 
-    # Lab-4 backend doesn't have analytics, return lab info instead
+    # Lab-7 backend doesn't have analytics yet, return lab info instead
     try:
         data = _fetch_json(f"{backend_url}/items/", settings.lms_api_key)
         if isinstance(data, dict):
@@ -157,13 +157,23 @@ def _get_specific_score(lab_arg: str) -> HandlerResult:
         # Filter only labs
         labs = [item for item in items if item.get("type") == "lab"]
 
-        # Try to find lab by index or title
+        # Try to find lab by index, lab_id, or title
         lab_item = None
-        if lab_arg.isdigit():
-            idx = int(lab_arg) - 1
-            if 0 <= idx < len(labs):
-                lab_item = labs[idx]
+        
+        # Extract lab number from argument (e.g., "lab-01" -> 1, "4" -> 4)
+        lab_num = None
+        if lab_arg.lower().startswith("lab-"):
+            try:
+                lab_num = int(lab_arg[4:].lstrip("0"))
+            except ValueError:
+                pass
+        elif lab_arg.isdigit():
+            lab_num = int(lab_arg)
+        
+        if lab_num is not None and 1 <= lab_num <= len(labs):
+            lab_item = labs[lab_num - 1]
         else:
+            # Search by title
             for lab in labs:
                 if lab_arg.lower() in lab.get("title", "").lower():
                     lab_item = lab
