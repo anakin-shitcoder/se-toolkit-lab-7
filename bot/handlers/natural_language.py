@@ -154,26 +154,44 @@ def handle_natural_language(message: str) -> HandlerResult:
 def _get_lowest_pass_rate() -> HandlerResult:
     """Get the lab with the lowest pass rate by calling backend for each lab."""
     try:
+        from services.lms_client import LMSClient
+        from config import get_settings
+        
+        settings = get_settings()
+        lms = LMSClient(settings.lms_api_url, settings.lms_api_key)
+        
         # Check pass rates for each lab
         lab_ids = ["lab-01", "lab-02", "lab-03", "lab-04", "lab-05", "lab-06"]
+        lab_names = {
+            "lab-01": "Lab 01 - Products, Architecture and Roles",
+            "lab-02": "Lab 02 - Run, Fix, and Deploy",
+            "lab-03": "Lab 03 - Backend API",
+            "lab-04": "Lab 04 - Testing, Front-end, and AI Agents",
+            "lab-05": "Lab 05 - Data Pipeline and Analytics",
+            "lab-06": "Lab 06 - Build Your Own Agent",
+        }
         
         lowest_lab = ""
+        lowest_lab_name = ""
         lowest_rate = 100.0
         
         for lab_id in lab_ids:
             try:
-                result = handle_scores(lab_id)
-                if result.success and result.data:
-                    # Extract avg_score from data
-                    pass_rate = result.data.get("avg_score", 100.0)
-                    if pass_rate < lowest_rate and pass_rate > 0:
-                        lowest_rate = pass_rate
+                data = lms._request("GET", f"/analytics/pass-rates?lab={lab_id}")
+                if data and isinstance(data, list) and len(data) > 0:
+                    # Calculate average score across all tasks
+                    total_score = sum(t.get("avg_score", 0) for t in data)
+                    avg_rate = total_score / len(data)
+                    
+                    if avg_rate < lowest_rate and avg_rate > 0:
+                        lowest_rate = avg_rate
                         lowest_lab = lab_id
+                        lowest_lab_name = lab_names.get(lab_id, lab_id.upper())
             except Exception:
                 continue
         
         if lowest_lab:
-            return HandlerResult.ok(f"📊 {lowest_lab.upper()} has the lowest pass rate at {lowest_rate:.1f}%")
+            return HandlerResult.ok(f"📊 {lowest_lab_name} has the lowest pass rate at {lowest_rate:.1f}%")
         else:
             return handle_labs("")
     except Exception as e:
