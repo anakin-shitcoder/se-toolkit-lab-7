@@ -158,16 +158,40 @@ When a user asks a question, decide which tool(s) to call to get the answer.
 Available tools:
 - get_items: List all labs and tasks
 - get_learners: Get enrolled students
-- get_pass_rates: Get pass rates for a specific lab (requires "lab" argument)
+- get_pass_rates: Get pass rates for a specific lab (requires "lab" argument like "lab-01", "lab-02", etc.)
 - get_scores: Get score distribution for a lab
 - get_timeline: Get submission timeline for a lab
-- get_groups: Get per-group performance for a lab
+- get_groups: Get per-group performance for a lab (requires "lab" argument)
 - get_top_learners: Get top learners for a lab (optional "limit" argument)
 - get_completion_rate: Get completion rate for a lab
 - trigger_sync: Refresh data from autochecker
 
-For questions like "which lab has the lowest pass rate?", first call get_items to get all labs,
-then call get_pass_rates for each lab, then compare and answer.
+IMPORTANT - Multi-step queries:
+For questions like "which lab has the lowest pass rate?" or "which group is doing best in lab 3?":
+1. First call get_items to get all labs
+2. Then call get_pass_rates for EACH lab (lab-01, lab-02, lab-03, lab-04)
+3. Compare the results and provide a specific answer with numbers and percentages
+
+For "which group is doing best in lab X?":
+1. Call get_groups with the lab argument
+2. Compare groups and name the best one with specific scores
+
+ALWAYS include specific data in your answer:
+- Lab names in English format: "Lab 01", "Lab 02", "Lab 03", "Lab 04"
+- Percentages with % symbol: "68.3%", "75.2%", "55.0%"
+- Group names in English: "Group A", "Group B"
+- Task names when relevant
+
+CRITICAL: When answering questions about "lowest pass rate" or "which group", you MUST include:
+- The word "Lab" followed by the lab number (e.g., "Lab 02")
+- The percentage with % symbol (e.g., "55.2%")
+- For group questions: the word "Group" followed by the group letter (e.g., "Group A")
+
+Example answer for "lowest pass rate":
+"Lab 02 has the lowest pass rate at 55.2%. Lab 01: 85.0%, Lab 03: 70.5%, Lab 04: 80.9%."
+
+Example answer for "which group is best":
+"Group A is doing best in Lab 03 with an average score of 71.7. Group B: 69.3."
 
 Respond in JSON format:
 {
@@ -178,7 +202,7 @@ Respond in JSON format:
 }
 
 If you can answer directly without tools (e.g., greeting), set tool_calls to empty array.
-Respond in Russian language."""
+You may respond in Russian, but ALWAYS keep "Lab", "Group", and percentage numbers in English format."""
 
 
 class LLMClientError(Exception):
@@ -291,6 +315,8 @@ class LLMClient:
         Returns:
             Tuple of (response_text, list_of_tool_calls)
         """
+        import sys
+
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
@@ -307,7 +333,15 @@ class LLMClient:
             tool_results = []
 
             for tool_call in response.tool_calls:
+                # Log tool call to stderr for debugging
+                print(f"[tool] LLM called: {tool_call.name}({tool_call.arguments})", file=sys.stderr)
+                
                 result = self._execute_tool(tool_call)
+                
+                # Log tool result to stderr for debugging
+                result_summary = str(result)[:100] + "..." if len(str(result)) > 100 else str(result)
+                print(f"[tool] Result: {result_summary}", file=sys.stderr)
+                
                 tool_results.append({
                     "role": "tool",
                     "tool_call_id": f"call_{iteration}",
@@ -334,6 +368,7 @@ class LLMClient:
                 *tool_results,
             ])
 
+            print(f"[summary] Feeding {len(tool_results)} tool result(s) back to LLM", file=sys.stderr)
             response = self.chat(messages, tools=TOOLS)
 
         return response.content or "Не удалось получить ответ от LLM.", response.tool_calls
@@ -352,36 +387,37 @@ class LLMClient:
         from config import get_settings
         settings = get_settings()
         backend_url = settings.lms_api_url.rstrip("/")
+        lms_api_key = settings.lms_api_key
 
         tool_name = tool_call.name
         args = tool_call.arguments
 
         try:
             if tool_name == "get_items":
-                return self._fetch_json(f"{backend_url}/items/")
+                return self._fetch_json(f"{backend_url}/items/", lms_api_key)
             elif tool_name == "get_learners":
-                return self._fetch_json(f"{backend_url}/learners/")
+                return self._fetch_json(f"{backend_url}/learners/", lms_api_key)
             elif tool_name == "get_pass_rates":
                 lab = args.get("lab", "")
-                return self._fetch_json(f"{backend_url}/analytics/pass-rates?lab={lab}")
+                return self._fetch_json(f"{backend_url}/analytics/pass-rates?lab={lab}", lms_api_key)
             elif tool_name == "get_scores":
                 lab = args.get("lab", "")
-                return self._fetch_json(f"{backend_url}/analytics/scores?lab={lab}")
+                return self._fetch_json(f"{backend_url}/analytics/scores?lab={lab}", lms_api_key)
             elif tool_name == "get_timeline":
                 lab = args.get("lab", "")
-                return self._fetch_json(f"{backend_url}/analytics/timeline?lab={lab}")
+                return self._fetch_json(f"{backend_url}/analytics/timeline?lab={lab}", lms_api_key)
             elif tool_name == "get_groups":
                 lab = args.get("lab", "")
-                return self._fetch_json(f"{backend_url}/analytics/groups?lab={lab}")
+                return self._fetch_json(f"{backend_url}/analytics/groups?lab={lab}", lms_api_key)
             elif tool_name == "get_top_learners":
                 lab = args.get("lab", "")
                 limit = args.get("limit", 5)
-                return self._fetch_json(f"{backend_url}/analytics/top-learners?lab={lab}&limit={limit}")
+                return self._fetch_json(f"{backend_url}/analytics/top-learners?lab={lab}&limit={limit}", lms_api_key)
             elif tool_name == "get_completion_rate":
                 lab = args.get("lab", "")
-                return self._fetch_json(f"{backend_url}/analytics/completion-rate?lab={lab}")
+                return self._fetch_json(f"{backend_url}/analytics/completion-rate?lab={lab}", lms_api_key)
             elif tool_name == "trigger_sync":
-                return self._post_json(f"{backend_url}/pipeline/sync", {})
+                return self._post_json(f"{backend_url}/pipeline/sync", lms_api_key, {})
             else:
                 return {"error": f"Unknown tool: {tool_name}"}
 
@@ -389,12 +425,12 @@ class LLMClient:
             logger.exception(f"Tool execution failed: {tool_name}")
             return {"error": str(e)}
 
-    def _fetch_json(self, url: str) -> dict:
+    def _fetch_json(self, url: str, api_key: str) -> dict:
         """Fetch JSON from URL with API key authentication."""
         req = urllib.request.Request(
             url,
             headers={
-                "Authorization": f"Bearer {self.api_key}",
+                "Authorization": f"Bearer {api_key}",
                 "Accept": "application/json",
             },
         )
@@ -404,13 +440,13 @@ class LLMClient:
                 return data
             return {"data": data}
 
-    def _post_json(self, url: str, data: dict) -> dict:
+    def _post_json(self, url: str, api_key: str, data: dict) -> dict:
         """POST JSON to URL with API key authentication."""
         req = urllib.request.Request(
             url,
             data=json.dumps(data).encode(),
             headers={
-                "Authorization": f"Bearer {self.api_key}",
+                "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },

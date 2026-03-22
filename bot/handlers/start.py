@@ -10,12 +10,12 @@ from .base import HandlerResult
 def handle_start(args: str = "") -> HandlerResult:
     """
     Handle the /start command.
-    
+
     Args:
         args: Command arguments (ignored for start command)
-    
+
     Returns:
-        HandlerResult: Welcome message
+        HandlerResult: Welcome message with inline keyboard
     """
     message = (
         "👋 Добро пожаловать в SE Toolkit Bot!\n\n"
@@ -28,4 +28,17 @@ def handle_start(args: str = "") -> HandlerResult:
         "Также вы можете писать сообщения в свободной форме - "
         "я постараюсь понять ваш запрос и помочь!"
     )
-    return HandlerResult.ok(message)
+    
+    # Inline keyboard for quick actions
+    keyboard = [
+        [
+            {"text": "📚 Labs", "callback_data": "labs"},
+            {"text": "📊 Scores", "callback_data": "scores"},
+        ],
+        [
+            {"text": "💚 Health", "callback_data": "health"},
+            {"text": "❓ Help", "callback_data": "help"},
+        ],
+    ]
+    
+    return HandlerResult.ok(message, keyboard=keyboard)

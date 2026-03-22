@@ -8,8 +8,9 @@ WORKDIR /app
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Copy lockfile from parent directory (Dockerfile is in bot/)
-COPY ../pyproject.toml ./
+# Copy bot's pyproject.toml and lockfile
+COPY bot/pyproject.toml ./
+COPY bot/README.md ./
 
 # Copy project files
 COPY bot/bot.py bot/config.py ./

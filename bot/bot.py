@@ -60,12 +60,53 @@ def run_test_mode(command: str, args: str) -> int:
     """
     # Lazy imports for test mode (no aiogram dependency)
     from handlers import get_handler_for_command, HandlerResult, handle_natural_language
+    from services.llm_client import LLMClient
+    from config import get_settings
+
+    # Reconstruct full message for natural language processing
+    full_message = f"{command} {args}".strip() if args else command
 
     # Check if this is a natural language message (doesn't start with known command)
-    if command not in ["start", "help", "health", "labs", "scores"]:
-        # Treat as natural language message
-        logger.info(f"Natural language query: {command} {args}".strip())
-        full_message = f"{command} {args}".strip()
+    known_commands = ["start", "help", "health", "labs", "scores"]
+    
+    if command not in known_commands:
+        # Treat as natural language message - use LLM routing
+        logger.info(f"Natural language query: {full_message}")
+        
+        settings = get_settings()
+        llm = LLMClient(
+            base_url=settings.llm_api_url,
+            api_key=settings.llm_api_key,
+            model=settings.llm_model,
+        )
+        
+        # Check if LLM is available
+        if not llm.is_available():
+            print("⚠️ LLM недоступен. Используем fallback.")
+            result: HandlerResult = handle_natural_language(full_message)
+            if result.success:
+                print(result.message)
+                return 0
+            else:
+                print(f"Error: {result.error}")
+                if result.message:
+                    print(result.message)
+                return 1
+        
+        # Use LLM for intent recognition with tool calling
+        print(f"[debug] Отправляем запрос в LLM: {full_message}", file=sys.stderr)
+        
+        # Try route_message which handles tool calling
+        response_text, tool_calls = llm.route_message(full_message)
+        
+        # If we got a meaningful response (more than just a keyword), use it
+        if response_text and len(response_text) > 20 and not response_text.strip().upper() in ["LABS", "SCORES", "HEALTH", "SYNC", "HELLO", "HI"]:
+            print(f"[summary] LLM response: {response_text[:100]}...", file=sys.stderr)
+            print(response_text)
+            return 0
+        
+        # Fallback: LLM returned keyword, use natural_language handler which has backend calls
+        print(f"[debug] LLM returned keyword, using fallback handler", file=sys.stderr)
         result: HandlerResult = handle_natural_language(full_message)
         if result.success:
             print(result.message)
@@ -189,15 +230,48 @@ async def handle_message(message: "Message") -> None:
     """
     Handle regular messages (for LLM intent recognition).
 
-    In production, this would use LLMClient to recognize intent
-    and route to appropriate handler.
+    Uses LLMClient to recognize intent and route to appropriate handler.
     """
-    # Placeholder - LLM integration will be added in Task 3
-    await message.answer(
-        "🤔 Я получил ваше сообщение. В будущей версии я буду "
-        "понимать естественный язык и отвечать на ваши вопросы!\n\n"
-        "Пока используйте команды: /start, /help, /labs, /scores, /health"
+    from services.llm_client import LLMClient
+    from config import get_settings
+
+    settings = get_settings()
+    user_text = message.text or ""
+
+    # Initialize LLM client
+    llm = LLMClient(
+        base_url=settings.llm_api_url,
+        api_key=settings.llm_api_key,
+        model=settings.llm_model,
     )
+
+    # Check if LLM is available
+    if not llm.is_available():
+        await message.answer(
+            "🤔 Я получил ваше сообщение. LLM временно недоступен.\n\n"
+            "Пока используйте команды: /start, /help, /labs, /scores, /health"
+        )
+        return
+
+    # Route message through LLM
+    response_text, tool_calls = llm.route_message(user_text)
+
+    # Send response with inline keyboard for common actions
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="📚 Labs", callback_data="labs"),
+                InlineKeyboardButton(text="📊 Scores", callback_data="scores"),
+            ],
+            [
+                InlineKeyboardButton(text="💚 Health", callback_data="health"),
+            ],
+        ]
+    )
+
+    await message.answer(response_text, reply_markup=keyboard)
 
 
 async def send_handler_result(message: "Message", result: "HandlerResult") -> None:
@@ -208,8 +282,22 @@ async def send_handler_result(message: "Message", result: "HandlerResult") -> No
         message: Original message
         result: Handler result to send
     """
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
     if result.success:
-        await message.answer(result.message)
+        # Build inline keyboard if provided
+        reply_markup = None
+        if result.keyboard:
+            keyboard = [
+                [
+                    InlineKeyboardButton(text=btn["text"], callback_data=btn["callback_data"])
+                    for btn in row
+                ]
+                for row in result.keyboard
+            ]
+            reply_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+        
+        await message.answer(result.message, reply_markup=reply_markup)
     else:
         await message.answer(f"❌ {result.message}")
 

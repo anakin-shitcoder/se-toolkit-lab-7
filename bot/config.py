@@ -34,26 +34,28 @@ class BotSettings:
 
     def __init__(self, env_file: Optional[Path] = None) -> None:
         """
-        Initialize settings from environment file.
+        Initialize settings from environment file or environment variables.
 
         Args:
             env_file: Path to .env file to load
         """
         # Telegram Bot Token
-        self.telegram_bot_token = ""
-        
+        self.telegram_bot_token = os.getenv("BOT_TOKEN", "")
+
         # LMS Backend API
-        self.lms_api_url = "http://localhost:8000"
-        self.lms_api_key = ""
-        
+        self.lms_api_url = os.getenv("LMS_API_BASE_URL", "http://localhost:8000")
+        self.lms_api_key = os.getenv("LMS_API_KEY", "")
+
         # LLM API (for intent recognition)
-        self.llm_api_url = "http://localhost:11434"
-        self.llm_model = "llama3.2"
-        
+        self.llm_api_url = os.getenv("LLM_API_BASE_URL", "http://localhost:11434")
+        self.llm_api_key = os.getenv("LLM_API_KEY", "")
+        self.llm_model = os.getenv("LLM_API_MODEL", "coder-model")
+
         # Bot settings
         self.bot_name = "SE Toolkit Bot"
         self.debug_mode = False
-        
+
+        # Load from file if provided (overrides env vars)
         if env_file and env_file.exists():
             self._load_from_file(env_file)
 

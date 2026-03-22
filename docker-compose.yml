@@ -98,6 +98,11 @@ services:
     restart: unless-stopped
     networks:
       - lms-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    dns:
+      - "8.8.8.8"
+      - "8.8.4.4"
     environment:
       - BOT_TOKEN=${BOT_TOKEN:?'BOT_TOKEN is required'}
       - LMS_API_BASE_URL=http://backend:${BACKEND_CONTAINER_PORT}
