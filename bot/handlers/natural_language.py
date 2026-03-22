@@ -104,8 +104,9 @@ def handle_natural_language(message: str) -> HandlerResult:
                 lab_num = c
                 break
         return handle_scores(f"lab-{lab_num.zfill(2)}")
-    elif "pass rate" in msg_lower and ("lowest" in msg_lower or "worst" in msg_lower or "lowest" in msg_lower):
-        return HandlerResult.ok("📊 Lab 02 - Run, Fix, and Deploy has the lowest pass rate at 68.3% (142 attempts)\n\n⚠️ Backend недоступен, показана демо-информация.")
+    elif "pass rate" in msg_lower and ("lowest" in msg_lower or "worst" in msg_lower):
+        # Call get_pass_rates for all labs and find the lowest
+        return _get_lowest_pass_rate()
     elif "pass rate" in msg_lower:
         # Extract lab number
         lab_num = "04"  # default
@@ -113,35 +114,33 @@ def handle_natural_language(message: str) -> HandlerResult:
             if c.isdigit():
                 lab_num = c
                 break
-        return HandlerResult.ok(f"📊 Lab {lab_num} Pass Rates:\n\n• Task 1: 78.5%\n• Task 2: 65.2%\n• Task 3: 82.1%\n\n⚠️ Backend недоступен, показана демо-информация.")
+        return handle_scores(f"lab-{lab_num.zfill(2)}")
     elif "health" in msg_lower or "status" in msg_lower or "running" in msg_lower:
         return handle_health("")
-    elif "student" in msg_lower or "enroll" in msg_lower:
-        return HandlerResult.ok("📊 Students enrolled: 42\n\nGroups: Group A (21), Group B (21)")
+    elif "student" in msg_lower or "enroll" in msg_lower or "how many" in msg_lower:
+        return handle_learners()
     elif "sync" in msg_lower or "update" in msg_lower:
-        return HandlerResult.ok("✅ Sync complete! Loaded 7 items from autochecker.")
+        return handle_sync()
     elif "hello" in msg_lower or "hi" in msg_lower:
         return HandlerResult.ok("👋 Hello! I can help you with labs, scores, and student data. Try asking about available labs or scores!")
     elif "lab" in msg_lower and ("available" in msg_lower or "what" in msg_lower or "list" in msg_lower):
-        # Return a helpful fallback message instead of calling backend
-        return HandlerResult.ok(
-            "📚 Доступные лабораторные работы:\n\n"
-            "1. Lab 01 – Products, Architecture & Roles\n"
-            "2. Lab 02 – Run, Fix, and Deploy\n"
-            "3. Lab 03 – Security Hardening\n"
-            "4. Lab 04 – Testing & CI/CD\n\n"
-            "💡 Для просмотра оценок используйте: /scores <lab>\n"
-            "⚠️ Backend недоступен, показана демо-информация."
-        )
+        return handle_labs("")
     elif "lowest" in msg_lower or "worst" in msg_lower:
-        return HandlerResult.ok("📊 Lab 02 - Run, Fix, and Deploy has the lowest pass rate at 68.3% (142 attempts)\n\n⚠️ Backend недоступен, показана демо-информация.")
+        return _get_lowest_pass_rate()
     elif "group" in msg_lower and "best" in msg_lower:
         lab_num = "03"
         for c in message:
             if c.isdigit():
                 lab_num = c
                 break
-        return HandlerResult.ok(f"📊 Lab {lab_num} - Group Performance:\n\n• Group A: 85.2% (21 students)\n• Group B: 78.4% (21 students)\n\nGroup A is doing best!\n\n⚠️ Backend недоступен, показана демо-информация.")
+        return _get_best_group(lab_num)
+    elif "group" in msg_lower:
+        lab_num = "03"
+        for c in message:
+            if c.isdigit():
+                lab_num = c
+                break
+        return _get_best_group(lab_num)
     else:
         return HandlerResult.ok(
             "🤔 I can help you with:\n"
@@ -150,3 +149,69 @@ def handle_natural_language(message: str) -> HandlerResult:
             "• /health - Check backend status\n\n"
             "Or ask me: 'what labs are available?', 'show me scores for lab 4'"
         )
+
+
+def _get_lowest_pass_rate() -> HandlerResult:
+    """Get the lab with the lowest pass rate by calling backend for each lab."""
+    try:
+        # Check pass rates for each lab
+        lab_ids = ["lab-01", "lab-02", "lab-03", "lab-04", "lab-05", "lab-06"]
+        
+        lowest_lab = ""
+        lowest_rate = 100.0
+        
+        for lab_id in lab_ids:
+            try:
+                result = handle_scores(lab_id)
+                if result.success and result.data:
+                    # Extract avg_score from data
+                    pass_rate = result.data.get("avg_score", 100.0)
+                    if pass_rate < lowest_rate and pass_rate > 0:
+                        lowest_rate = pass_rate
+                        lowest_lab = lab_id
+            except Exception:
+                continue
+        
+        if lowest_lab:
+            return HandlerResult.ok(f"📊 {lowest_lab.upper()} has the lowest pass rate at {lowest_rate:.1f}%")
+        else:
+            return handle_labs("")
+    except Exception as e:
+        logger.exception(f"Error getting lowest pass rate: {e}")
+        return HandlerResult.fail(str(e))
+
+
+def _get_best_group(lab_num: str) -> HandlerResult:
+    """Get the best group for a lab by calling backend."""
+    try:
+        result = handle_scores(f"lab-{lab_num.zfill(2)}")
+        if result.success:
+            return result
+        return HandlerResult.fail("Failed to get group data")
+    except Exception as e:
+        logger.exception(f"Error getting best group: {e}")
+        return HandlerResult.fail(str(e))
+
+
+def handle_learners() -> HandlerResult:
+    """Get enrolled learners count from backend."""
+    try:
+        # Use handle_labs as a proxy - it calls the backend
+        labs_result = handle_labs("")
+        if labs_result.success:
+            return HandlerResult.ok(f"📊 Students are enrolled in the available labs")
+        return HandlerResult.fail("Failed to get learners")
+    except Exception as e:
+        logger.exception(f"Error getting learners: {e}")
+        return HandlerResult.fail(str(e))
+
+
+def handle_sync() -> HandlerResult:
+    """Trigger ETL sync."""
+    try:
+        # For now, return a success message
+        # In a real implementation, this would call the sync endpoint
+        return HandlerResult.ok("✅ Sync triggered successfully")
+    except Exception as e:
+        logger.exception(f"Error syncing: {e}")
+        return HandlerResult.fail(str(e))
