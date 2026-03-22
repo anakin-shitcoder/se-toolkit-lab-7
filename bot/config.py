@@ -48,6 +48,7 @@ class BotSettings:
 
         # LLM API (for intent recognition)
         self.llm_api_url = os.getenv("LLM_API_BASE_URL", "http://localhost:11434")
+        self.llm_api_key = os.getenv("LLM_API_KEY", "")
         self.llm_model = os.getenv("LLM_API_MODEL", "coder-model")
 
         # Bot settings
