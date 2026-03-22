@@ -95,11 +95,27 @@ def run_test_mode(command: str, args: str) -> int:
         
         # Use LLM for intent recognition with tool calling
         print(f"[debug] Отправляем запрос в LLM: {full_message}", file=sys.stderr)
+        
+        # Try route_message which handles tool calling
         response_text, tool_calls = llm.route_message(full_message)
         
-        print(f"[summary] LLM response: {response_text[:100]}...", file=sys.stderr)
-        print(response_text)
-        return 0
+        # If we got a meaningful response (more than just a keyword), use it
+        if response_text and len(response_text) > 20 and not response_text.strip().upper() in ["LABS", "SCORES", "HEALTH", "SYNC", "HELLO", "HI"]:
+            print(f"[summary] LLM response: {response_text[:100]}...", file=sys.stderr)
+            print(response_text)
+            return 0
+        
+        # Fallback: LLM returned keyword, use natural_language handler which has backend calls
+        print(f"[debug] LLM returned keyword, using fallback handler", file=sys.stderr)
+        result: HandlerResult = handle_natural_language(full_message)
+        if result.success:
+            print(result.message)
+            return 0
+        else:
+            print(f"Error: {result.error}")
+            if result.message:
+                print(result.message)
+            return 1
 
     logger.info(f"Testing command: {command} with args: {args!r}")
 
